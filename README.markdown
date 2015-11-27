@@ -47,14 +47,14 @@ For an example of a lab that uses this simulation, see the [worksheet](https://g
 
 ## Code
 
-The software is written in Python using NumPy for the calculations, TkInter for the interface, and the Python Imaging Library to produce the 2D plots. Those libraries are available for Windows, OS X, and Linux.
+The software is written in Python using NumPy for the calculations, TkInter for the interface, and the Python Imaging Library (Pillow) to produce the 2D plots. Those libraries are available for Windows, OS X, and Linux.
 
 ## Notes
--  This code works with Python 2.7; I'll probably make it compatible with Python 3 eventually -- once all the libraries have Python 3 versions.
+-  This code works with Python 3.
 -  This program requires three libraries
   -  [Numpy](http://numpy.scipy.org/)
   -  TkInter, which is part of the default Python install
-  -  [Python Imaging Library](http://www.pythonware.com/products/pil/). The only available downloads on that page are for Windows, but it as available on other platforms through other means. For example, on Mac OS X, it's available through package managers like pip and MacPorts.
+  -  [Python Imaging Library](http://www.pythonware.com/products/pil/) ([Pillow](http://pillow.readthedocs.org/en/3.0.x/installation.html))
 
 ## Contact
 
