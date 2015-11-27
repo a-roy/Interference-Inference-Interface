@@ -1,6 +1,7 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
-import Tkinter, tkFileDialog, ttk, tkMessageBox
+import tkinter
+from tkinter import filedialog, messagebox, ttk
 import csv #for exporting in CSV
 import time #for testing how long steps take
 from numpy import * #so that we don't have to have 'numpy.'s everywhere
@@ -146,7 +147,7 @@ maxEzRMS = 1 #contains the largest Ez_RMS seen -- start it at one to avoid divid
 #THE METHODS-------------------------------------------------------------------
 def exportData():
   """Saves Ez, Ez_RMS, and other settings to a CSV file"""
-  fileName = tkFileDialog.asksaveasfilename(filetypes=[('CSV','*.csv')], title="Export data as...")
+  fileName = filedialog.asksaveasfilename(filetypes=[('CSV','*.csv')], title="Export data as...")
   if fileName != '': #'' is returned if the user hits cancel
     writer = csv.writer(open(fileName, "w"))
     writer.writerow(('x_slice',sliceX))
@@ -159,7 +160,7 @@ def exportData():
     
     writer.writerow(('Ez','')) #need the '' or else it will split up 'Ez_RMS^2'???
     row = ['x\\y']
-    row.extend(range(0,canvasY))
+    row.extend(list(range(0,canvasY)))
     writer.writerow(row)
     for i, r in enumerate(EzVis[:,:]):
       row = [i]
@@ -168,7 +169,7 @@ def exportData():
       
     writer.writerow(('Ez_RMS^2','')) #need the '' or else it will split up 'Ez_RMS^2'???
     row = ['x\\y']
-    row.extend(range(0,canvasY))
+    row.extend(list(range(0,canvasY)))
     writer.writerow(row)
     for i, r in enumerate(EzRMS[:,:]):
       row = [i]
@@ -225,21 +226,21 @@ def redrawBarrierFrame():
     frame = ttk.Labelframe(barrierFrame, text="Opening {}".format(oNum))
     frame.grid(column=0, row=r, columnspan=2, sticky='nesw', padx=5, pady=5)
       
-    top = Tkinter.IntVar()
-    bottom = Tkinter.IntVar()
-    distStrVar = Tkinter.StringVar()
+    top = tkinter.IntVar()
+    bottom = tkinter.IntVar()
+    distStrVar = tkinter.StringVar()
     
     #the spinbox for the bottom of the opening
     ttk.Label(frame, text="Bottom:").grid(column=0, row=0, sticky='nes', padx=5, pady=5)
     #having the following work is kind of tricky; the default parameter in the lambda is critical. See <http://mail.python.org/pipermail/tutor/2005-November/043360.html>
-    spinbox = Tkinter.Spinbox(frame, width=4, textvariable=bottom, from_=0, to=canvasX, command=lambda n=oNum: spinboxChanged(n))
+    spinbox = tkinter.Spinbox(frame, width=4, textvariable=bottom, from_=0, to=canvasX, command=lambda n=oNum: spinboxChanged(n))
     spinbox.bind("<KeyRelease>",lambda arg, n=oNum: spinboxChanged(n)) #any key runs the spinboxChanged method, which will enable or disable the 'update' button
     spinbox.grid(column=1, row=0, sticky='nsw', padx=5, pady=5)
     spinboxes.append(spinbox)
     
     #the spinbox for the top of the opening
     ttk.Label(frame, text="Top:").grid(column=0, row=1, sticky='nes', padx=5, pady=5)
-    spinbox = Tkinter.Spinbox(frame, width=4, textvariable=top, from_=0, to=canvasX, command=lambda n=oNum: spinboxChanged(n))
+    spinbox = tkinter.Spinbox(frame, width=4, textvariable=top, from_=0, to=canvasX, command=lambda n=oNum: spinboxChanged(n))
     spinbox.bind("<KeyRelease>",lambda arg, n=oNum: spinboxChanged(n))
     spinbox.grid(column=1, row=1, sticky='nsw', padx=5, pady=5)
     ttk.Label(frame, textvariable=distStrVar).grid(column=0, row=2, sticky='nes', padx=5, pady=5)
@@ -355,11 +356,11 @@ def updateEzPlot():
   """Makes a plot of Ez and stores it in ezPlot"""
   global ezPlot
   #notes:
-  #1)Image.fromstring can only handle 32bit floats, so need to do that conversion
+  #1)Image.frombytes can only handle 32bit floats, so need to do that conversion
   #2)0 (and below) are black, 255 and above are white, shades of gray inbetween
   #3)need to store array in (height, width) format
   data = float32((transpose(EzVis[:,:])/maxEz + 1)/2*256) #+1 so that zero is in the center
-  im = Image.fromstring('F', (data.shape[1], data.shape[0]), data.tostring())
+  im = Image.frombytes('F', (data.shape[1], data.shape[0]), data.tostring())
   ezPlot = ImageTk.PhotoImage(image=im) #need to store it so it doesn't get garbage collected, otherwise it won't display correctly on the canvas
     
 def updateEzRMSPlot():
@@ -370,7 +371,7 @@ def updateEzRMSPlot():
     data = 256*(float32(transpose(EzRMSSQ)/maxEzRMS**2))  
   else: #want to display Ez_RMS
     data = 256*(float32(transpose(EzRMS/maxEzRMS)))    
-  im = Image.fromstring('F', (data.shape[1], data.shape[0]), data.tostring())
+  im = Image.frombytes('F', (data.shape[1], data.shape[0]), data.tostring())
   ezRMSPlot = ImageTk.PhotoImage(image=im) #need to store it so it doesn't get garbage collected, otherwise it won't display correctly on the canvas
 
 def makeAvgedTrace(xS, yS, invert=False, othercoord=None):
@@ -396,9 +397,9 @@ def makeAvgedTrace(xS, yS, invert=False, othercoord=None):
 def plot(draw, x, y, color):
   """Plots the 1D data on the drawing in the given color"""
   if traceSetting.get() == 'line': #line plot
-    draw.line(zip(x,y), fill=color)
+    draw.line(list(zip(x,y)), fill=color)
   else: #dot plot
-    draw.point(zip(x,y), fill=color)
+    draw.point(list(zip(x,y)), fill=color)
       
 def updateHorizPlot():
   """Updates the horizontal 1D plot"""
@@ -406,7 +407,7 @@ def updateHorizPlot():
   
   im = Image.new('RGB', (canvasX,plotD))
   draw = ImageDraw.Draw(im)
-  x = range(0,canvasX)
+  x = list(range(0,canvasX))
   #plot EzRMS
   y = makeAvgedTrace(EZx_all, sliceY, invert=True, othercoord=x)
   plot(draw, x, y, 'green')
@@ -422,7 +423,7 @@ def updateVertPlot():
   
   im = Image.new('RGB', (plotD, canvasY))
   draw = ImageDraw.Draw(im)
-  y = range(0,canvasY)
+  y = list(range(0,canvasY))
   #plot EzRMS
   x = makeAvgedTrace(sliceX, EZy_all, othercoord=y)
   plot(draw, x, y, 'green')
@@ -443,15 +444,15 @@ def redrawCanvases():
   
   #now, put the plots on the canvases
   updateEzPlot()
-  Ezcanvas.create_image(0,0,image=ezPlot,anchor=Tkinter.NW)
+  Ezcanvas.create_image(0,0,image=ezPlot,anchor=tkinter.NW)
   updateHorizPlot()
-  HorizPlotCanvas.create_image(0,0,image=horizPlot,anchor=Tkinter.NW)  
+  HorizPlotCanvas.create_image(0,0,image=horizPlot,anchor=tkinter.NW)
   updateEzRMSPlot()
-  EzRMScanvas.create_image(0,0,image=ezRMSPlot,anchor=Tkinter.NW)
-  HorizPlotCanvas.create_image(0,0,image=horizPlot,anchor=Tkinter.NW)  
+  EzRMScanvas.create_image(0,0,image=ezRMSPlot,anchor=tkinter.NW)
+  HorizPlotCanvas.create_image(0,0,image=horizPlot,anchor=tkinter.NW)
   updateVertPlot()
-  VertPlotCanvas1.create_image(0,0,image=vertPlot,anchor=Tkinter.NW)  
-  VertPlotCanvas2.create_image(0,0,image=vertPlot,anchor=Tkinter.NW)  
+  VertPlotCanvas1.create_image(0,0,image=vertPlot,anchor=tkinter.NW)
+  VertPlotCanvas2.create_image(0,0,image=vertPlot,anchor=tkinter.NW)
   
   #next, draw the barrier
   invGaps = invertedGaps()
@@ -652,7 +653,7 @@ def run():
       resetAveraging()
     step()
     redrawCanvases()
-    print str(time.clock()-timer)
+    print(str(time.clock()-timer))
     if not fastForwarding:
       root.after(1,run)
   
@@ -733,14 +734,14 @@ def step(avg=True):
       
 #THE GUI-----------------------------------------------------------------------
 #The root window
-root = Tkinter.Tk()
+root = tkinter.Tk()
 root.title("Interference Inference Interface")
 
 #The menubar and menus
-menubar = Tkinter.Menu(root)
+menubar = tkinter.Menu(root)
 
 #the file menu
-filemenu = Tkinter.Menu(menubar, tearoff=0)
+filemenu = tkinter.Menu(menubar, tearoff=0)
 filemenu.add_command(label="Export Data", accelerator="Ctrl+E", command=exportData)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", accelerator="Ctrl+Q", command=root.quit)
@@ -750,33 +751,33 @@ root.bind_all('<Control-q>', lambda arg: root.quit())
 menubar.add_cascade(label="File", menu=filemenu)
 
 #the edit menu
-editmenu = Tkinter.Menu(menubar, tearoff=0)
+editmenu = tkinter.Menu(menubar, tearoff=0)
 editmenu.add_command(label="Cut", accelerator="Ctrl+X", command=lambda: root.event_generate('<Control-x>'))
 editmenu.add_command(label="Copy", accelerator="Ctrl+C", command=lambda: root.event_generate('<Control-c>'))
 editmenu.add_command(label="Paste", accelerator="Ctrl+V", command=lambda: root.event_generate('<Control-v>'))
 menubar.add_cascade(label="Edit", menu=editmenu)
 
 #the view menu
-viewmenu = Tkinter.Menu(menubar, tearoff=0)
-traceSetting = Tkinter.StringVar(value="line")
+viewmenu = tkinter.Menu(menubar, tearoff=0)
+traceSetting = tkinter.StringVar(value="line")
 viewmenu.add_radiobutton(label="Trace Setting:", state="disabled")
 viewmenu.add_radiobutton(label="Lines", variable=traceSetting, value="line", command=conditionalRedraw)
 viewmenu.add_radiobutton(label="Dots", variable=traceSetting, value="dot", command=conditionalRedraw)
 
 viewmenu.add_separator()
-avgSetting = Tkinter.StringVar(value='amp')
+avgSetting = tkinter.StringVar(value='amp')
 viewmenu.add_radiobutton(label="Displayed Average:", state="disabled")
 viewmenu.add_radiobutton(label="Amplitude", variable=avgSetting, value="amp", command=conditionalRedraw)
 viewmenu.add_radiobutton(label="Ez_rms", variable=avgSetting, value="rms", command=conditionalRedraw)
 viewmenu.add_radiobutton(label="Ez_rms^2", variable=avgSetting, value="sq", command=conditionalRedraw)
 
 viewmenu.add_separator()
-distLineSetting = Tkinter.StringVar(value="lines")
+distLineSetting = tkinter.StringVar(value="lines")
 viewmenu.add_checkbutton(label="Gap to slice lines", variable=distLineSetting, onvalue="lines", offvalue="nolines", command=conditionalRedraw)
 menubar.add_cascade(label="View", menu=viewmenu)
 
 #the simulation menu
-simmenu = Tkinter.Menu(menubar, tearoff=0)
+simmenu = tkinter.Menu(menubar, tearoff=0)
 simmenu.add_command(label="Run", accelerator="Ctrl+R", command=start)
 root.bind("<Control-r>", lambda arg: start())
 simmenu.add_command(label="Stop", accelerator="Ctrl+S", command=stop)
@@ -792,8 +793,8 @@ root.bind("<Control-f>", lambda arg: fastForward())
 menubar.add_cascade(label="Simulation", menu=simmenu)
 
 #the help menu
-helpmenu = Tkinter.Menu(menubar, tearoff=0)
-helpmenu.add_command(label="About", command=lambda: tkMessageBox.showinfo("About", "The Interference Inference Interface\n\nhttp://lnmaurer.github.com/Interference-Inference-Interface\n\nCommit #69\n\nCopyright 2012 by Leon Maurer\n\nCode available under GNU Public License Version 2"))
+helpmenu = tkinter.Menu(menubar, tearoff=0)
+helpmenu.add_command(label="About", command=lambda: messagebox.showinfo("About", "The Interference Inference Interface\n\nhttp://lnmaurer.github.com/Interference-Inference-Interface\n\nCommit #69\n\nCopyright 2012 by Leon Maurer\n\nCode available under GNU Public License Version 2"))
 menubar.add_cascade(label="Help", menu=helpmenu)
 
 root.config(menu=menubar)
@@ -802,32 +803,32 @@ root.config(menu=menubar)
 viewFrame = ttk.Labelframe(root, text='View')
 viewFrame.grid(column=0, row=0, sticky='nsew',padx=5,pady=5)
 
-Ezcanvas = Tkinter.Canvas(viewFrame, width=canvasX, height=canvasY)
+Ezcanvas = tkinter.Canvas(viewFrame, width=canvasX, height=canvasY)
 Ezcanvas.grid(column=0, row=0, columnspan=3, rowspan=3, sticky='nsew', padx=5, pady=5)    
 
-HorizPlotCanvas = Tkinter.Canvas(viewFrame, width=canvasX, height=plotD)
+HorizPlotCanvas = tkinter.Canvas(viewFrame, width=canvasX, height=plotD)
 HorizPlotCanvas.grid(column=0, row=3, columnspan=3, rowspan=5, sticky='nsew', padx=5, pady=5)
 
 sliceY = 60 #position of horizontal slice
 sliceX = canvasX/2
 
-xStringVar = Tkinter.StringVar(value="x=" + str(sliceX) + "d")
-yStringVar = Tkinter.StringVar(value="y=" + str(sliceY) + "d")
-tStringVar = Tkinter.StringVar()
-EzStringVar = Tkinter.StringVar()
-EzRMSStringVar = Tkinter.StringVar()
+xStringVar = tkinter.StringVar(value="x=" + str(sliceX) + "d")
+yStringVar = tkinter.StringVar(value="y=" + str(sliceY) + "d")
+tStringVar = tkinter.StringVar()
+EzStringVar = tkinter.StringVar()
+EzRMSStringVar = tkinter.StringVar()
 ttk.Label(viewFrame, textvariable=xStringVar).grid(column=3, row=3, sticky='nsew', padx=5, pady=0)
 ttk.Label(viewFrame, textvariable=yStringVar).grid(column=3, row=4, sticky='nsew', padx=5, pady=0)
 ttk.Label(viewFrame, textvariable=tStringVar).grid(column=3, row=5, sticky='nsew', padx=5, pady=0)    
 ttk.Label(viewFrame, textvariable=EzStringVar).grid(column=3, row=6, sticky='nsew', padx=5, pady=0)    
 ttk.Label(viewFrame, textvariable=EzRMSStringVar).grid(column=3, row=7, sticky='nsew', padx=5, pady=0)    
 
-VertPlotCanvas1 = Tkinter.Canvas(viewFrame, width=plotD, height=canvasY)
+VertPlotCanvas1 = tkinter.Canvas(viewFrame, width=plotD, height=canvasY)
 VertPlotCanvas1.grid(column=3, row=0, columnspan=1, rowspan=3, sticky='nsew', padx=5, pady=5)
-VertPlotCanvas2 = Tkinter.Canvas(viewFrame, width=plotD, height=canvasY)
+VertPlotCanvas2 = tkinter.Canvas(viewFrame, width=plotD, height=canvasY)
 VertPlotCanvas2.grid(column=3, row=8, columnspan=1, rowspan=3, sticky='nsew', padx=5, pady=5)
 
-EzRMScanvas = Tkinter.Canvas(viewFrame, width=canvasX, height=canvasY)
+EzRMScanvas = tkinter.Canvas(viewFrame, width=canvasX, height=canvasY)
 EzRMScanvas.grid(column=0, row=8, columnspan=3, rowspan=3, sticky='nsew', padx=5, pady=5)
 
 #make it so that, after dragging an element has ceased, the binding is reset so that further dragging won't move the element unless it gets clicked again first
@@ -850,11 +851,11 @@ barrierFrame.grid(column=1,row=0,sticky='nsew',padx=5,pady=5)
 
 ttk.Button(barrierFrame, text='Add Opening', command=addOpening).grid(column=0, row=0, columnspan=2, sticky='nsew', padx=5, pady=5)
 ttk.Label(barrierFrame, text="Bottom:").grid(column=0, row=1, sticky='nes', padx=5, pady=5)
-bottomEntry = Tkinter.Spinbox(barrierFrame, width=4, from_=0, to=canvasX)
+bottomEntry = tkinter.Spinbox(barrierFrame, width=4, from_=0, to=canvasX)
 bottomEntry.bind("<Return>",lambda arg: root.focus()) #removes focus after the number is entered
 bottomEntry.grid(column=1, row=1, sticky='nsw', padx=5, pady=5)
 ttk.Label(barrierFrame, text="Top:").grid(column=0, row=2, sticky='nes', padx=5, pady=5)
-topEntry = Tkinter.Spinbox(barrierFrame, width=4, from_=0, to=canvasX)
+topEntry = tkinter.Spinbox(barrierFrame, width=4, from_=0, to=canvasX)
 topEntry.bind("<Return>",lambda arg: root.focus()) #removes focus after the number is entered
 topEntry.grid(column=1, row=2, sticky='nsw', padx=5, pady=5)
 
